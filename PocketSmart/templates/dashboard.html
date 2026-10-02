@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><title>Dashboard - PocketSmart</title>{% include "partials/head.html" %}</head>
+<body>
+{% set active='dashboard' %}{% include "partials/app_nav.html" %}
+<div class="page-head welcome"><h1>Welcome, {{ user.username }}!</h1><p>Choose a budget planner to get started with your personalized financial planning experience</p></div>
+<div class="dash-wrap"><div class="container">
+  <div class="planner-grid">
+    <div class="planner-card"><div class="img" style="background:linear-gradient(135deg,#8a7a63,#3d3b36)"><div style="height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.6rem"><i class="fa-solid fa-couch"></i></div></div>
+      <div class="body"><h3><i class="fa-solid fa-house"></i> Home Budget Planner</h3><p>Plan your interior design budget efficiently with AI-powered recommendations for furniture, lighting, and more.</p><a class="btn btn-primary" href="/home-planner">Get Started</a></div></div>
+    <div class="planner-card"><div class="img" style="background:linear-gradient(135deg,#e8553d,#f7b32b 50%,#2aa6a0)"><div style="height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.6rem"><i class="fa-solid fa-cake-candles"></i></div></div>
+      <div class="body"><h3><i class="fa-solid fa-champagne-glasses"></i> Party Budget Planner</h3><p>Plan your perfect event with budget allocations for venue, catering, decorations, and entertainment.</p><a class="btn btn-primary" href="/party-planner">Get Started</a></div></div>
+    <div class="planner-card"><div class="img" style="background:linear-gradient(135deg,#9a9a9a,#4b2a2a)"><div style="height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.6rem"><i class="fa-solid fa-gem"></i></div></div>
+      <div class="body"><h3><i class="fa-solid fa-gem"></i> Jewelry Budget Planner</h3><p>Find the ideal jewelry pieces for any occasion that match your outfit and stay within your budget.</p><a class="btn btn-primary" href="/jewelry-planner">Get Started</a></div></div>
+  </div>
+  <div class="hist-btn-wrap"><a class="btn btn-orange" href="/history"><i class="fa-solid fa-clock-rotate-left"></i> View All Recommendation History</a></div>
+  <div class="activity"><div class="hd"><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</div><div id="act"><div class="empty">Loading...</div></div></div>
+</div></div>
+<div class="footer-slim footer">&copy; 2025 PocketSmart. All rights reserved.</div>
+<script>
+(async()=>{
+  const el=document.getElementById("act");
+  try{
+    const r=await fetch("/recommendation-history",{credentials:"same-origin"}); const d=await r.json();
+    const items=(d.history||[]).slice(0,3);
+    if(!items.length){el.innerHTML='<div class="empty">No plans yet. Pick a planner above to create your first one.</div>';return}
+    const ic={home:"fa-house",party:"fa-champagne-glasses",jewelry:"fa-gem"};
+    el.innerHTML=items.map(i=>{
+      const dt=new Date(i.timestamp).toLocaleDateString("en-IN",{month:"short",day:"numeric",year:"numeric"});
+      let t,sub=`Budget: ${PS.inr(i.summary.total_budget)}`;
+      if(i.type==="home")t="Home Budget Plan";
+      else if(i.type==="party"){t=`${PS.pretty(i.input.party_type)} Party Budget Plan`;sub+=` for ${i.input.num_guests} guests`}
+      else{t="Jewelry Budget Plan";sub+=` for ${PS.esc(i.input.occasion)}`}
+      return `<div class="row"><div class="ci"><i class="fa-solid ${ic[i.type]}"></i></div><div><b>${t}</b><small>${sub} - Created on ${dt}</small></div></div>`}).join("");
+  }catch(e){el.innerHTML='<div class="empty">Could not load recent activity.</div>'}
+})();
+</script></body></html>
